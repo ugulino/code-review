@@ -59,11 +59,15 @@ def processar_pr(pr_numero):
     arquivos = obter_arquivos_pr(pr_numero)
     for arquivo in arquivos:
         caminho = arquivo["filename"]
-        conteudo = arquivo.get("patch", "")
-        print(f"Analisando arquivo: {caminho}")
-        comentarios = revisar_codigo(conteudo)
-        for position, comentario in comentarios:
-            adicionar_comentario_pr(pr_numero, caminho, position, comentario)
+        # Garantir que estamos processando apenas o arquivo correto
+        if caminho == "person.py":
+            conteudo = arquivo.get("patch", "")
+            print(f"Analisando arquivo: {caminho}")
+            comentarios = revisar_codigo(conteudo)
+            for position, comentario in comentarios:
+                adicionar_comentario_pr(pr_numero, caminho, position, comentario)
+        else:
+            print(f"Ignorando arquivo: {caminho}")
 
 if __name__ == "__main__":
     # Número do PR (pode ser passado como argumento)
