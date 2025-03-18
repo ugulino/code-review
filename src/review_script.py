@@ -4,8 +4,8 @@ import requests
 # Configurar variáveis de ambiente
 GITHUB_API = "https://api.github.com"
 REPO_OWNER = "ugulino"  # Substitua pelo nome do proprietário do repositório
-REPO_NAME = "https://github.com/ugulino/code-review"  # Substitua pelo nome do repositório
-TOKEN = os.getenv("CODE_REVIEW_TOKEN")
+REPO_NAME = "code-review"  # Substitua pelo nome do repositório
+TOKEN = os.getenv("GITHUB_TOKEN")
 
 def obter_arquivos_pr(pr_numero):
     """Obtém os arquivos modificados no PR."""
