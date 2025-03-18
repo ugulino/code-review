@@ -1,0 +1,26 @@
+
+## Instalação
+
+1. Clone o repositório:
+    ```sh
+    git clone https://github.com/ugulino/code-review
+    cd code-review
+    ```
+
+2. Crie um ambiente virtual e ative-o:
+    ```sh
+    python -m venv venv
+    source venv/bin/activate  # No Windows use `venv\Scripts\activate`
+    ```
+
+3. Instale as dependências:
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+## Uso
+
+Para revisar um código, execute o script `review.py`:
+
+```sh
+python [review.py](http://_vscodecontentref_/4)
