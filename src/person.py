@@ -8,6 +8,5 @@ def calcular_idade(dt_nascimento):
     if hoje.month < int(dt_nascimento.split("-")[1]) or (hoje.month == int(dt_nascimento.split("-")[1]) and hoje.day < int(dt_nascimento.split("-")[2])):
         idade -= 1
     return idade
-
 # Exemplo de uso
 print(calcular_idade("1990-05-15"))

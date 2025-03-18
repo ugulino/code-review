@@ -13,6 +13,7 @@ def obter_arquivos_pr(pr_numero):
     headers = {"Authorization": f"Bearer {TOKEN}"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
+    
     return response.json()
 
 def adicionar_comentario_pr(pr_numero, arquivo, linha, comentario):
