@@ -31,15 +31,17 @@ def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
     """Adiciona um comentário na revisão do PR."""
     url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_numero}/comments"
     headers = {"Authorization": f"Bearer {TOKEN}"}
+    commit_id = obter_commit_id(pr_numero)
     payload = {
         "body": comentario,
         "path": arquivo,
         "position": position,
-        "commit_id": obter_commit_id(pr_numero)
+        "commit_id": commit_id
     }
     response = requests.post(url, headers=headers, json=payload)
     try:
         response.raise_for_status()
+        print(f"Comentário adicionado com sucesso no arquivo '{arquivo}' na posição {position}.")
     except requests.exceptions.HTTPError as e:
         print(f"Erro ao adicionar comentário no PR: {e}\nResposta: {response.text}")
         raise
@@ -47,8 +49,9 @@ def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
 def revisar_codigo(arquivo_conteudo):
     """Simula a revisão de código e gera comentários."""
     comentarios = []
-    if "def " in arquivo_conteudo:
-        comentarios.append("Considere adicionar docstrings para melhor documentação.")
+    for i, linha in enumerate(arquivo_conteudo.splitlines(), start=1):
+        if "def " in linha:
+            comentarios.append((i, "Considere adicionar docstrings para melhor documentação."))
     return comentarios
 
 def processar_pr(pr_numero):
@@ -57,9 +60,9 @@ def processar_pr(pr_numero):
     for arquivo in arquivos:
         caminho = arquivo["filename"]
         conteudo = arquivo.get("patch", "")
+        print(f"Analisando arquivo: {caminho}")
         comentarios = revisar_codigo(conteudo)
-        position = 1  # Exemplo para posição no diff; ajuste conforme necessidade
-        for comentario in comentarios:
+        for position, comentario in comentarios:
             adicionar_comentario_pr(pr_numero, caminho, position, comentario)
 
 if __name__ == "__main__":
