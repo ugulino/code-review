@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from deepseek import DeepSeek
+from deepseek.deepseek import DeepSeek
 
 
 # Configurações da API
