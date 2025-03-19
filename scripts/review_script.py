@@ -16,7 +16,7 @@ if not DEEPSEEK_API_KEY:
     raise ValueError("DeepSeek API Key não configurada")
 
 # Inicializa o cliente do DeepSeek
-deepseek = DeepSeek(api_key=DEEPSEEK_API_KEY)
+deepseek = DeepSeekAPI(api_key=DEEPSEEK_API_KEY)
 
 def obter_pr_number():
     """Obtém o número do PR do contexto do GitHub Actions"""
