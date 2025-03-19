@@ -8,6 +8,9 @@ REPO_OWNER = "ugulino"
 REPO_NAME = "code-review"
 TOKEN = os.getenv("GITHUB_TOKEN")
 
+if not TOKEN:
+    raise ValueError("O token do GitHub (GITHUB_TOKEN) não foi definido.")
+
 # Carregar o modelo CodeBERT
 tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
 model = AutoModelForSequenceClassification.from_pretrained("microsoft/codebert-base", num_labels=2)
@@ -22,7 +25,7 @@ def obter_arquivos_pr(pr_numero):
 
 def analisar_codigo_com_codebert(conteudo):
     """Usa o CodeBERT para revisar o código."""
-    inputs = tokenizer(conteudo, return_tensors="pt", truncation=True, max_length=512)
+    inputs = tokenizer(conteudo, return_tensors="pt", truncation=True, padding=True, max_length=512)
     outputs = model(**inputs)
     logits = outputs.logits
     classe_predita = logits.argmax().item()
@@ -42,7 +45,10 @@ def obter_commit_id(pr_numero):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     commits = response.json()
-    return commits[-1]["sha"]  # Retorna o SHA do último commit no PR    
+    
+    commit_id = commits[-1]["sha"]  # Retorna o SHA do último commit no PR    
+    print(f"Commit ID recuperado: {commit_id}")
+    return commit_id
 
 def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
     """Adiciona um comentário na revisão do PR."""
@@ -54,6 +60,12 @@ def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
         "position": position,
         "commit_id": obter_commit_id(pr_numero)
     }
+
+    print("Enviando comentário com os seguintes dados:")
+    print(f"URL: {url}")
+    print(f"Headers: {headers}")
+    print(f"Payload: {payload}")
+
     response = requests.post(url, headers=headers, json=payload)
     try:
         response.raise_for_status()
@@ -69,11 +81,16 @@ def processar_pr(pr_numero):
         caminho = arquivo["filename"]
         if caminho.endswith(".py"):  # Foco apenas em arquivos Python
             conteudo = arquivo.get("patch", "")
-            print(f"Analisando arquivo: {caminho}")
-            comentario = analisar_codigo_com_codebert(conteudo)
-            adicionar_comentario_pr(pr_numero, caminho, 1, comentario)
+            if conteudo:
+                print(f"Analisando arquivo: {caminho}")
+                comentario = analisar_codigo_com_codebert(conteudo)
+                position = arquivo.get("position", 1)  # Verifica se há uma posição válida
+                adicionar_comentario_pr(pr_numero, caminho, position, comentario)
 
 if __name__ == "__main__":
-    # Número do PR (pode ser passado como argumento)
-    pr_numero = int(os.getenv("PR_NUMBER", 1))
+    pr_numero_env = os.getenv("PR_NUMBER")
+    if not pr_numero_env or not pr_numero_env.isdigit():
+        raise ValueError("Número do PR inválido ou não definido corretamente.")
+    
+    pr_numero = int(pr_numero_env)
     processar_pr(pr_numero)
