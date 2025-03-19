@@ -35,6 +35,15 @@ def analisar_codigo_com_codebert(conteudo):
     else:
         return "Sem recomendações específicas."
 
+def obter_commit_id(pr_numero):
+    """Obtém o commit_id mais recente no PR."""
+    url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_numero}/commits"
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    commits = response.json()
+    return commits[-1]["sha"]  # Retorna o SHA do último commit no PR    
+
 def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
     """Adiciona um comentário na revisão do PR."""
     url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_numero}/comments"
