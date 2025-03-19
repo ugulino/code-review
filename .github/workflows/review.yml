@@ -31,5 +31,5 @@ jobs:
       - name: Run DeepSeek Analysis
         run: python scripts/review_script.py
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEP_SEEK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
