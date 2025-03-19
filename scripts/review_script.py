@@ -7,7 +7,7 @@ from deepseek import DeepSeekAPI  # Import corrigido
 # Configurações da API
 GITHUB_API = "https://api.github.com"
 TOKEN = os.getenv("GITHUB_TOKEN")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 # Validação de variáveis de ambiente
 if not TOKEN:
