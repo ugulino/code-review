@@ -1,6 +1,5 @@
 import os
 import requests
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # Configurar variáveis de ambiente
 GITHUB_API = "https://api.github.com"
@@ -11,9 +10,12 @@ TOKEN = os.getenv("GITHUB_TOKEN")
 if not TOKEN:
     raise ValueError("O token do GitHub (GITHUB_TOKEN) não foi definido.")
 
-# Carregar o modelo CodeBERT
-tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
-model = AutoModelForSequenceClassification.from_pretrained("microsoft/codebert-base", num_labels=2)
+# Aqui você pode configurar o DeepSeek (supondo que seja uma API ou biblioteca)
+# Supondo que DeepSeek tenha um método 'buscar_semantico' para encontrar trechos de código relacionados.
+from deepseek import DeepSeek
+
+# Inicializa o DeepSeek (se necessário)
+deepseek = DeepSeek(model="bert-base-uncased")
 
 def obter_arquivos_pr(pr_numero):
     """Obtém os arquivos modificados no PR."""
@@ -23,25 +25,22 @@ def obter_arquivos_pr(pr_numero):
     response.raise_for_status()
     return response.json()
 
-def analisar_codigo_com_codebert(conteudo):
-    """Usa o CodeBERT para revisar o código, fornecendo contexto adicional."""
-    prompt = (
-        "Revise o seguinte código Python e forneça sugestões claras para melhorar a legibilidade, "
-        "desempenho e segurança. Use exemplos e referências a boas práticas:\n\n"
-        f"{conteudo}"
-    )
+def enriquecer_comentario_com_deepseek(comentario, conteudo):
+    """Enriquece o comentário com informações do DeepSeek para melhorar as sugestões."""
     
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    outputs = model(**inputs)
-    logits = outputs.logits
-    classe_predita = logits.argmax().item()
+    # Aqui você pode buscar por trechos de código semânticamente relacionados a legibilidade, desempenho e segurança
+    resultado_legibilidade = deepseek.buscar_semantico("melhorar legibilidade no código", conteudo)
+    resultado_desempenho = deepseek.buscar_semantico("melhorar desempenho no código", conteudo)
+    resultado_seguranca = deepseek.buscar_semantico("melhorar segurança no código", conteudo)
 
-    if classe_predita == 0:
-        return "Código adequado. Sem problemas detectados."
-    elif classe_predita == 1:
-        return "Sugestão de melhoria: verifique a legibilidade e a estrutura do código."
-    else:
-        return "Revisão necessária: possíveis problemas de desempenho ou segurança."
+    if resultado_legibilidade:
+        comentario += f" Sugestão: {resultado_legibilidade}"
+    if resultado_desempenho:
+        comentario += f" Sugestão: {resultado_desempenho}"
+    if resultado_seguranca:
+        comentario += f" Sugestão: {resultado_seguranca}"
+
+    return comentario
 
 def obter_commit_id(pr_numero):
     """Obtém o commit_id mais recente no PR."""
@@ -54,20 +53,6 @@ def obter_commit_id(pr_numero):
     commit_id = commits[-1]["sha"]  # Retorna o SHA do último commit no PR    
     print(f"Commit ID recuperado: {commit_id}")
     return commit_id
-
-def enriquecer_comentario(comentario, conteudo):
-    """Melhora os comentários do CodeBERT tornando-os mais específicos."""
-    
-    if "legibilidade" in comentario:
-        comentario += " Considere renomear variáveis para tornar o código mais intuitivo."
-    
-    if "desempenho" in comentario:
-        comentario += " Verifique se há loops ou operações custosas que podem ser otimizadas."
-    
-    if "segurança" in comentario:
-        comentario += " Evite o uso de eval(), exec() ou manipulação insegura de entrada do usuário."
-    
-    return comentario
 
 def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
     """Adiciona um comentário na revisão do PR."""
@@ -94,7 +79,7 @@ def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
         raise
 
 def processar_pr(pr_numero):
-    """Processa um Pull Request, usa CodeBERT para revisão e adiciona comentários."""
+    """Processa um Pull Request e adiciona comentários com sugestões enriquecidas."""
     arquivos = obter_arquivos_pr(pr_numero)
     for arquivo in arquivos:
         caminho = arquivo["filename"]
@@ -102,10 +87,9 @@ def processar_pr(pr_numero):
             conteudo = arquivo.get("patch", "")
             if conteudo:
                 print(f"Analisando arquivo: {caminho}")
-                comentario = analisar_codigo_com_codebert(conteudo)
+                comentario = "Análise semântica do código: "
+                comentario = enriquecer_comentario_com_deepseek(comentario, conteudo)
                 position = arquivo.get("position", 1)  # Verifica se há uma posição válida
-                comentario = analisar_codigo_com_codebert(conteudo)
-                comentario = enriquecer_comentario(comentario, conteudo)
                 adicionar_comentario_pr(pr_numero, caminho, position, comentario)
 
 if __name__ == "__main__":
