@@ -2,7 +2,7 @@ import os
 import requests
 import json
 import base64  # Adicionado import faltante
-from deepseek import DeepSeek  # Import corrigido
+from deepseek import DeepSeekAPI  # Import corrigido
 
 # Configurações da API
 GITHUB_API = "https://api.github.com"
