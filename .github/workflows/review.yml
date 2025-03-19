@@ -1,4 +1,4 @@
-name: Code Review with Copilot
+name: Code Review with CodeBERT
 
 on:
   pull_request:
@@ -17,7 +17,9 @@ jobs:
           python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          pip install requests
+          pip install transformers torch
 
       - name: Run Code Review Script
         run: python scripts/review_script.py

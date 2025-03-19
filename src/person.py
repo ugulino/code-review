@@ -9,4 +9,4 @@ def calcular_idade(dt_nascimento):
         idade -= 1
     return idade
 # Exemplo de uso
-print(calcular_idade("1976-05-05"))
+print(calcular_idade("1976-05-25"))
