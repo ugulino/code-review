@@ -1,7 +1,8 @@
 import os
 import requests
 import json
-from deepseek_api import DeepSeek
+from deepseek import DeepSeek
+
 
 # Configurações da API
 GITHUB_API = "https://api.github.com"
