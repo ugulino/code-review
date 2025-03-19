@@ -89,6 +89,7 @@ def processar_pr(pr_numero):
 
 if __name__ == "__main__":
     pr_numero_env = os.getenv("PR_NUMBER")
+    print(f"DEBUG: PR_NUMBER='{pr_numero_env}'")  # Para depuração
     if not pr_numero_env or not pr_numero_env.isdigit():
         raise ValueError("Número do PR inválido ou não definido corretamente.")
     
