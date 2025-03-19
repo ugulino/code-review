@@ -21,6 +21,12 @@ jobs:
           pip install requests
           pip install transformers torch
 
+      - name: Definir PR_NUMBER
+        run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+
+      - name: Verificar PR_NUMBER
+        run: echo "PR_NUMBER=$PR_NUMBER"
+
       - name: Run Code Review Script
         run: python scripts/review_script.py
         env:
