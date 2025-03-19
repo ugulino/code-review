@@ -14,20 +14,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
           pip install requests
-          pip install deepseek  # Instalar o DeepSeek
+          pip install deepseek-sdk
 
-      - name: Definir PR_NUMBER
-        run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-
-      - name: Verificar PR_NUMBER
-        run: echo "PR_NUMBER=$PR_NUMBER"
-
-      - name: Run Code Review Script
-        run: python scripts/review_script.py
+      - name: Configure PR environment
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "REPO_FULL_NAME=${{ github.repository }}" >> $GITHUB_ENV
+
+      - name: Run DeepSeek Analysis
+        run: python scripts/deepseek_review.py
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
