@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install requests
-          pip install deepseek-sdk
+          pip install deepseek  # Adicionando a instalação do deepseek
 
       - name: Configure PR environment
         env:
