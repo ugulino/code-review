@@ -1,4 +1,4 @@
-name: Code Review with CodeBERT
+name: Code Review with DeepSeek
 
 on:
   pull_request:
@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install requests
-          pip install transformers torch
+          pip install deepseek  # Instalar o DeepSeek
 
       - name: Definir PR_NUMBER
         run: echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
