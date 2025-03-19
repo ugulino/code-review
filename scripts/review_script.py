@@ -24,19 +24,24 @@ def obter_arquivos_pr(pr_numero):
     return response.json()
 
 def analisar_codigo_com_codebert(conteudo):
-    """Usa o CodeBERT para revisar o código."""
-    inputs = tokenizer(conteudo, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    """Usa o CodeBERT para revisar o código, fornecendo contexto adicional."""
+    prompt = (
+        "Revise o seguinte código Python e forneça sugestões claras para melhorar a legibilidade, "
+        "desempenho e segurança. Use exemplos e referências a boas práticas:\n\n"
+        f"{conteudo}"
+    )
+    
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512)
     outputs = model(**inputs)
     logits = outputs.logits
     classe_predita = logits.argmax().item()
 
-    # Simulação: ajuste de acordo com o mapeamento real das classes
     if classe_predita == 0:
-        return "Código parece adequado."
+        return "Código adequado. Sem problemas detectados."
     elif classe_predita == 1:
-        return "Revisão sugerida: Considere melhorar a legibilidade."
+        return "Sugestão de melhoria: verifique a legibilidade e a estrutura do código."
     else:
-        return "Sem recomendações específicas."
+        return "Revisão necessária: possíveis problemas de desempenho ou segurança."
 
 def obter_commit_id(pr_numero):
     """Obtém o commit_id mais recente no PR."""
@@ -49,6 +54,20 @@ def obter_commit_id(pr_numero):
     commit_id = commits[-1]["sha"]  # Retorna o SHA do último commit no PR    
     print(f"Commit ID recuperado: {commit_id}")
     return commit_id
+
+def enriquecer_comentario(comentario, conteudo):
+    """Melhora os comentários do CodeBERT tornando-os mais específicos."""
+    
+    if "legibilidade" in comentario:
+        comentario += " Considere renomear variáveis para tornar o código mais intuitivo."
+    
+    if "desempenho" in comentario:
+        comentario += " Verifique se há loops ou operações custosas que podem ser otimizadas."
+    
+    if "segurança" in comentario:
+        comentario += " Evite o uso de eval(), exec() ou manipulação insegura de entrada do usuário."
+    
+    return comentario
 
 def adicionar_comentario_pr(pr_numero, arquivo, position, comentario):
     """Adiciona um comentário na revisão do PR."""
@@ -85,6 +104,8 @@ def processar_pr(pr_numero):
                 print(f"Analisando arquivo: {caminho}")
                 comentario = analisar_codigo_com_codebert(conteudo)
                 position = arquivo.get("position", 1)  # Verifica se há uma posição válida
+                comentario = analisar_codigo_com_codebert(conteudo)
+                comentario = enriquecer_comentario(comentario, conteudo)
                 adicionar_comentario_pr(pr_numero, caminho, position, comentario)
 
 if __name__ == "__main__":
