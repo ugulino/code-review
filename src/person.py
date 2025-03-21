@@ -19,5 +19,5 @@ def calcular_idade(dt_nascimento):
     return idade
 
 # Exemplo de uso com erro intencional (None será impresso)
-print(calcular_idade("1976-05-26"))
+print(calcular_idade("1976-05-20"))
 print(calcular_idade(1976))  # Deve gerar erro ou retornar None
