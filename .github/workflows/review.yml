@@ -1,4 +1,4 @@
-name: Code Review with CodeBERT
+name: Code Review with DeepSeek
 
 on:
   pull_request:
@@ -14,14 +14,21 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          pip install requests
-          pip install transformers torch
+          pip install -r requirements.txt
 
-      - name: Run Code Review Script
+      - name: Configure PR environment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "REPO_FULL_NAME=${{ github.repository }}" >> $GITHUB_ENV
+
+      - name: Run DeepSeek Analysis
         run: python scripts/review_script.py
         env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEP_SEEK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

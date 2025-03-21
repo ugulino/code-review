@@ -1,3 +1,4 @@
 requests
+deepseek==1.0.0
 transformers
 torch
