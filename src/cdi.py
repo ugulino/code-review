@@ -7,6 +7,7 @@ def calcular_cdi(valor_inicial, taxa_diaria, dias):
         taxa_diaria (float): A taxa diária do CDI em formato decimal (ex: 0.0005 para 0,05%).
         dias (int): O número de dias do investimento.
 
+        
     Returns:
         float: O valor acumulado após o período.
     """
