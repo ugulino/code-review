@@ -1,22 +1,22 @@
 import os
 import requests
 import json
-import base64  # Adicionado import faltante
-from deepseek import DeepSeekAPI  # Import corrigido
+import base64
+import openai  # Substituindo DeepSeek pela OpenAI
 
 # Configurações da API
 GITHUB_API = "https://api.github.com"
 TOKEN = os.getenv("GITHUB_TOKEN")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Validação de variáveis de ambiente
 if not TOKEN:
     raise ValueError("GitHub Token não configurado")
-if not DEEPSEEK_API_KEY:
-    raise ValueError("DeepSeek API Key não configurada")
+if not OPENAI_API_KEY:
+    raise ValueError("OpenAI API Key não configurada")
 
-# Inicializa o cliente do DeepSeek
-deepseek = DeepSeekAPI(api_key=DEEPSEEK_API_KEY)
+# Configuração da API da OpenAI
+openai.api_key = OPENAI_API_KEY
 
 def obter_pr_number():
     """Obtém o número do PR do contexto do GitHub Actions"""
@@ -61,8 +61,16 @@ def obter_arquivos_pr(pr_numero):
                     continue
     return arquivos
 
-def analisar_codigo_deepseek(codigo):
-    """Envia código para análise pelo DeepSeek"""
+def analisar_codigo_openai(codigo):
+    """
+    Envia código para análise pelo OpenAI GPT-4.
+
+    Args:
+        codigo (str): Código fonte a ser analisado.
+
+    Returns:
+        str: Resultado da análise.
+    """
     prompt = f"""Analise este código Python seguindo estas diretrizes:
     1. PEP8 e boas práticas
     2. Vulnerabilidades de segurança
@@ -80,16 +88,15 @@ def analisar_codigo_deepseek(codigo):
     """
     
     try:
-        response = deepseek.chat(
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
-            model="deepseek-coder-33b-instruct",
             temperature=0.3,
             max_tokens=2000
         )
-        print("Resposta do DeepSeek:", response)  # Log para depuração
-        return response.choices[0].message.content
+        return response["choices"][0]["message"]["content"]
     except Exception as e:
-        print(f"Erro na análise: {str(e)[:200]}")
+        print(f"Erro na análise: {str(e)}")
         return "**Erro na análise**\nNão foi possível obter sugestões para este arquivo."
 
 def criar_comentario_github(pr_numero, arquivo, analise):
@@ -99,7 +106,7 @@ def criar_comentario_github(pr_numero, arquivo, analise):
     headers = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github.v3+json"}
     
     payload = {
-        "body": f"**Análise DeepSeek para o arquivo `{arquivo['filename']}`**\n\n{analise}"
+        "body": f"**Análise OpenAI GPT-4 para o arquivo `{arquivo['filename']}`**\n\n{analise}"
     }
     
     try:
@@ -120,7 +127,7 @@ def processar_pr():
         
         for arquivo in arquivos:
             print(f"Analisando: {arquivo['filename']}")
-            analise = analisar_codigo_deepseek(arquivo["content"])
+            analise = analisar_codigo_openai(arquivo["content"])
             print(f"Análise para {arquivo['filename']}:\n{analise}")
             criar_comentario_github(pr_numero, arquivo, analise)
             
