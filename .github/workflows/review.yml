@@ -1,4 +1,4 @@
-name: Code Review with DeepSeek
+name: Code Review with OpenAI
 
 on:
   pull_request:
@@ -27,8 +27,8 @@ jobs:
           echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
           echo "REPO_FULL_NAME=${{ github.repository }}" >> $GITHUB_ENV
 
-      - name: Run DeepSeek Analysis
+      - name: Run OpenAI Analysis
         run: python scripts/review_script.py
         env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEP_SEEK }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
