@@ -86,6 +86,7 @@ def analisar_codigo_deepseek(codigo):
             temperature=0.3,
             max_tokens=2000
         )
+        print("Resposta do DeepSeek:", response)  # Log para depuração
         return response.choices[0].message.content
     except Exception as e:
         print(f"Erro na análise: {str(e)[:200]}")
@@ -94,23 +95,17 @@ def analisar_codigo_deepseek(codigo):
 def criar_comentario_github(pr_numero, arquivo, analise):
     """Cria um comentário no GitHub com os resultados da análise"""
     repo = os.getenv("GITHUB_REPOSITORY")
-    url = f"{GITHUB_API}/repos/{repo}/pulls/{pr_numero}/reviews"
+    url = f"{GITHUB_API}/repos/{repo}/issues/{pr_numero}/comments"  # Endpoint para comentários gerais
     headers = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github.v3+json"}
     
     payload = {
-        "body": f"**Análise DeepSeek**\n{analise}",
-        "event": "COMMENT",
-        "comments": [{
-            "path": arquivo["filename"],
-            "body": analise,
-            "line": 1
-        }]
+        "body": f"**Análise DeepSeek para o arquivo `{arquivo['filename']}`**\n\n{analise}"
     }
     
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print(f"Análise postada em {arquivo['filename']}")
+        print(f"Comentário postado no PR para o arquivo {arquivo['filename']}")
     except requests.exceptions.RequestException as e:
         print(f"Falha ao postar comentário: {str(e)[:200]}")
 
@@ -118,11 +113,15 @@ def processar_pr():
     """Processa o PR e adiciona comentários"""
     try:
         pr_numero = obter_pr_number()
+        print(f"PR Número: {pr_numero}")
+        
         arquivos = obter_arquivos_pr(pr_numero)
+        print(f"Arquivos encontrados: {[arquivo['filename'] for arquivo in arquivos]}")
         
         for arquivo in arquivos:
             print(f"Analisando: {arquivo['filename']}")
             analise = analisar_codigo_deepseek(arquivo["content"])
+            print(f"Análise para {arquivo['filename']}:\n{analise}")
             criar_comentario_github(pr_numero, arquivo, analise)
             
     except Exception as e:
